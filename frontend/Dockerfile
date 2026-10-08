@@ -1,5 +1,5 @@
 # =========================
-# 第一阶段：构建 Vue 前端
+# 第一阶段：构建 Vue
 # =========================
 FROM node:22-alpine AS build
 
@@ -15,9 +15,12 @@ RUN npm run build
 
 
 # =========================
-# 第二阶段：Nginx 运行前端
+# 第二阶段：Nginx
 # =========================
 FROM nginx:alpine
+
+# 明确使用 root 启动 Nginx
+USER root
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
