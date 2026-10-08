@@ -1,0 +1,7 @@
+services:
+  qzjks:
+    build: ./
+    image: qzjks:v1
+    container_name: my_qzjks
+    ports:
+      - 8080:8080
