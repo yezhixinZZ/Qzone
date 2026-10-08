@@ -1,7 +1,140 @@
 services:
-  qzjks:
-    build: .
+
+  # =========================
+  # MySQL
+  # =========================
+  mysql:
+    image: mysql:8.4
+
+    container_name: qzone-mysql
+
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: qzone
+      MYSQL_USER: qzone
+      MYSQL_PASSWORD: qzone123
+
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ../../database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+    networks:
+      - backend-net
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -uroot -p123456 --silent"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+
+  # =========================
+  # Redis
+  # =========================
+  redis:
+    image: redis:8
+
+    container_name: qzone-redis
+
+    restart: unless-stopped
+
+    command:
+      - redis-server
+      - --appendonly
+      - yes
+
+    volumes:
+      - ./data/redis:/data
+
+    networks:
+      - backend-net
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "redis-cli",
+          "ping"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+
+  # =========================
+  # Spring Boot 后端
+  # =========================
+  backend:
     image: qzjks:v1
-    container_name: my_qzjks
+
+    container_name: qzone-backend
+
+    restart: unless-stopped
+
+    environment:
+
+      # MySQL
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/qzone?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: qzone
+      SPRING_DATASOURCE_PASSWORD: qzone123
+
+      # Redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
+      # 上传目录
+      APP_UPLOAD_DIR: /app/uploads
+
+    volumes:
+      - ./data/uploads:/app/uploads
+
+    networks:
+      - frontend-net
+      - backend-net
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+      redis:
+        condition: service_healthy
+
+
+  # =========================
+  # Vue + Nginx 前端
+  # =========================
+  frontend:
+    image: qzone-frontend:v1
+
+    container_name: qzone-frontend
+
+    restart: unless-stopped
+
     ports:
-      - 8080:8080
+      - "80:80"
+
+    networks:
+      - frontend-net
+
+    depends_on:
+      - backend
+
+
+# =========================
+# 网络
+# =========================
+networks:
+
+  frontend-net:
+    driver: bridge
+
+  backend-net:
+    driver: bridge
