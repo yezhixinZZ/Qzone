@@ -1,6 +1,6 @@
 services:
   qzjks:
-    build: ./
+    build: .
     image: qzjks:v1
     container_name: my_qzjks
     ports:
