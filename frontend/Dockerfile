@@ -17,7 +17,7 @@ RUN npm run build
 # =========================
 # 第二阶段：Nginx
 # =========================
-FROM nginx:alpine
+FROM nginx:1.31.2-alpine
 
 # 明确使用 root 启动 Nginx
 USER root
