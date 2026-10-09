@@ -73,7 +73,7 @@ services:
   # Spring Boot 后端
   # =========================
   backend:
-    image: qzjks:v1
+    image: qzjks:${IMAGE_TAG:-v1}
 
     container_name: qzone-backend
 
@@ -112,7 +112,7 @@ services:
   # Vue + Nginx 前端
   # =========================
   frontend:
-    image: qzone-frontend:v1
+    image: qzone-frontend:${IMAGE_TAG:-v1}
 
     container_name: qzone-frontend
 
